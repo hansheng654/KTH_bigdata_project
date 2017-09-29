@@ -131,9 +131,21 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3):
     
     """
     assert train_split + val_split < 1.0
+    def sentiment_converter(y):
+        neg_thresh_hold = -1
+        pos_thresh_hold = 0.6
+        y = float(y)
+        if y > pos_thresh_hold:
+            return 1
+        elif y < neg_thresh_hold:
+            return -1
+        return 0 
     
     #y ranges from -4 to 4            
     raw_X,raw_Y = import_data()
+    
+    #snap into -1,0,or 1 based on thresh holds
+    raw_Y = list(map(sentiment_converter,raw_Y))
     #tfidf vectorizer
     transformer = TfidfVectorizer(preprocessor=input_cleaning,lowercase = False)
     X_sparse = transformer.fit_transform(raw_X)
