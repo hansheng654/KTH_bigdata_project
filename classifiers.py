@@ -10,7 +10,10 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.svm import LinearSVC, SVC
 import numpy as np
+import scipy
 
 [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
 
@@ -57,12 +60,18 @@ text_clf = SGDClassifier(loss ='hinge',
               n_iter = 100,
               shuffle = True)
 text_clf.fit(X_train_sparse,y_train)
-check_acc(text_clf,"MultinomialNB",True)
+check_acc(text_clf,"SGD",True)
+
+text_clf = SVC(C=19.41539, kernel='rbf', degree=2, gamma=1.2168)
+text_clf.fit(X_train_sparse,y_train)
+check_acc(text_clf,"SGD",True)
 
 parameters = {
-               'alpha': (1e-4,2e-4,3e-4,9e-3)
+               'C':scipy.stats.expon(scale=10),
+#               'degree':(2,3,4),
+               'gamma':scipy.stats.expon(scale=10)
                }
-gs_clf = GridSearchCV(text_clf,parameters,n_jobs=2)
+gs_clf = RandomizedSearchCV(text_clf,parameters,n_jobs=-1,n_iter = 10)
 gs_clf = gs_clf.fit(X_val_sparse,y_val)
 gs_clf.best_score_
 gs_clf.best_params_

@@ -13,7 +13,6 @@ import string
 from nltk.stem.lancaster import LancasterStemmer
 from sklearn.model_selection import train_test_split
 #from nltk.corpus import stopwords
-import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils import shuffle
 import numpy as np
