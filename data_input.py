@@ -109,7 +109,7 @@ def input_cleaning(text):
 #                wordsAndEmoticons.remove(word)
     return ' '.join(stemed_cleaned)
 
-def get_sparse_data(train_split = 0.6, val_split = 0.3):
+def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 0.001):
     """ Get the training, validation and testing data based on a split
     
     The size of testing set is the remaining portion of the total dataset
@@ -117,10 +117,13 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3):
     
     - Uses TF-IDF Vectoriser
     - auto shuffle
+    - max and min df controls the dimension of X
     
     Parameters:
         train_split: float, the percentage of training set, default to 0.6
         val_split: float, the percentage of validation set, default to 0.3
+        max_df: float, the upper boundry for word frequencies, default to 0.995
+        min_df: float, the lower boundry for word frequencies, default to 0.001
     
     Returns:
         [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],
@@ -130,6 +133,8 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3):
         Error if train + val split >1.0
     
     """
+
+    
     assert train_split + val_split < 1.0
     def sentiment_converter(y):
         neg_thresh_hold = -1
@@ -147,7 +152,8 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3):
     #snap into -1,0,or 1 based on thresh holds
     raw_Y = list(map(sentiment_converter,raw_Y))
     #tfidf vectorizer
-    transformer = TfidfVectorizer(preprocessor=input_cleaning,lowercase = False)
+    transformer = TfidfVectorizer(preprocessor=input_cleaning,lowercase = False,max_df = max_df,
+                                  min_df = min_df)
     X_sparse = transformer.fit_transform(raw_X)
     raw_X, X_sparse, y = shuffle(raw_X, X_sparse,raw_Y)
     
