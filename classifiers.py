@@ -15,8 +15,6 @@ from sklearn.svm import LinearSVC, SVC
 import numpy as np
 import scipy
 
-[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
-
 def check_acc(trained_clf,clf_name,val_acc = False):
     #print training and testing acc automatically 
     #training acc
@@ -38,7 +36,7 @@ def check_acc(trained_clf,clf_name,val_acc = False):
     
     
     #testing acc
-    result_sk = text_clf.predict(X_test_sparse)
+    result_sk = trained_clf.predict(X_test_sparse)
     
     
     true_label =np.array(list(map(int,y_test)))
@@ -46,32 +44,35 @@ def check_acc(trained_clf,clf_name,val_acc = False):
     acc = np.mean(result_sk == true_label) *100.
     print("Testing Accuracy, %s with tf-idf: %.2f%%" % (clf_name,acc))
 
-text_clf = BernoulliNB()
-text_clf.fit(X_train_sparse,y_train)
-check_acc(text_clf,"BernoulliNB")
-
-text_clf = MultinomialNB()
-text_clf.fit(X_train_sparse,y_train)
-check_acc(text_clf,"MultinomialNB")
-
-text_clf = SGDClassifier(loss ='hinge',
-              penalty = 'l1',
-              alpha = 0.0002,
-              n_iter = 100,
-              shuffle = True)
-text_clf.fit(X_train_sparse,y_train)
-check_acc(text_clf,"SGD",True)
-
-text_clf = SVC(C=19.41539, kernel='rbf', degree=2, gamma=1.2168)
-text_clf.fit(X_train_sparse,y_train)
-check_acc(text_clf,"SGD",True)
-
-parameters = {
-               'C':scipy.stats.expon(scale=10),
-#               'degree':(2,3,4),
-               'gamma':scipy.stats.expon(scale=10)
-               }
-gs_clf = RandomizedSearchCV(text_clf,parameters,n_jobs=-1,n_iter = 10)
-gs_clf = gs_clf.fit(X_val_sparse,y_val)
-gs_clf.best_score_
-gs_clf.best_params_
+if __name__ == "__main__":
+    [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
+    
+    text_clf = BernoulliNB()
+    text_clf.fit(X_train_sparse,y_train)
+    check_acc(text_clf,"BernoulliNB")
+    
+    text_clf = MultinomialNB()
+    text_clf.fit(X_train_sparse,y_train)
+    check_acc(text_clf,"MultinomialNB")
+    
+    text_clf = SGDClassifier(loss ='hinge',
+                  penalty = 'l1',
+                  alpha = 0.0002,
+                  n_iter = 100,
+                  shuffle = True)
+    text_clf.fit(X_train_sparse,y_train)
+    check_acc(text_clf,"SGD",True)
+    
+    text_clf = SVC(C=1000, kernel='rbf', degree=2, gamma=100)
+    text_clf.fit(X_train_sparse,y_train)
+    check_acc(text_clf,"rbf",True)
+    
+    #parameters = {
+    #               'C':scipy.stats.expon(scale=10),
+    ##               'degree':(2,3,4),
+    #               'gamma':scipy.stats.expon(scale=10)
+    #               }
+    #gs_clf = RandomizedSearchCV(text_clf,parameters,n_jobs=-1,n_iter = 1)
+    #gs_clf = gs_clf.fit(X_val_sparse,y_val)
+    #gs_clf.best_score_
+    #gs_clf.best_params_
