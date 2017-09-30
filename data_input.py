@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.utils import shuffle
 import numpy as np
+from sys import platform
 
 VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
 Million_TWEETS = '\data\for_final_project_V.txt'
@@ -25,7 +26,10 @@ def import_data():
     cwd = os.getcwd()
     Y = []
     X = []
-    data_path = cwd+"\\"+VADER_RAW_PATH
+    if platform=='win32':
+        data_path = cwd+"\\"+VADER_RAW_PATH
+    else:
+        data_path = cwd+'/'+ VADER_RAW_PATH.replace('\\','/')
     for filename in glob.glob(data_path):
         with open(filename, 'r',encoding='utf-8') as f:
             for line in f.readlines():
