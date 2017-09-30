@@ -2,7 +2,7 @@
 Twitter sentiment analysis
 
 ## Data Collection
-Obtain labeled data (VADER) - done 
+Obtain labeled data (VADER) - done
 Unlabeled tweets (1 million) - get
 Self-collected tweets (few thousand tweets relate to predefined topics) - nearly there
 
