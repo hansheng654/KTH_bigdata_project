@@ -38,7 +38,7 @@ def check_acc(trained_clf,clf_name,val_acc = False):
     
     
     #testing acc
-    result_sk = text_clf.predict(X_test_sparse)
+    result_sk = trained_clf.predict(X_test_sparse)
     
     
     true_label =np.array(list(map(int,y_test)))
