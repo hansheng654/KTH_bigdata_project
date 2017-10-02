@@ -18,7 +18,7 @@ from sklearn.utils import shuffle
 import numpy as np
 from sys import platform
 
-VADER_RAW_PATH ='\data\VADER\*eets_GroundTruth.txt'
+VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
 Million_TWEETS = '\data\for_final_project_V.txt'
 
 
@@ -39,14 +39,14 @@ def import_data():
     
     def sentiment_converter(y):
         neg_thresh_hold = -1
-        pos_thresh_hold = 0.6
+        pos_thresh_hold = 0.7
         y = float(y)
-        if y > pos_thresh_hold:
+        if y > pos_thresh_hold: #happy
             return 1
-        elif y < neg_thresh_hold:
-            return -1
+        elif y < neg_thresh_hold: #sad
+            return 2
         return 0 
-        #snap into -1,0,or 1 based on thresh holds
+        #snap into 0,1,2 based on thresh holds
     Y = list(map(sentiment_converter,Y))
     
     return X,Y
