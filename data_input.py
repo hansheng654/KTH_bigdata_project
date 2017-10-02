@@ -5,21 +5,21 @@ Created on Thu Sep 14 22:28:20 2017
 @author: Johnny
 """
 
-#import csv
 import glob
 import os
 import re
 import string
 from nltk.stem.lancaster import LancasterStemmer
-from sklearn.model_selection import train_test_split
-#from nltk.corpus import stopwords
-from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk import bigrams
+from sklearn.feature_extraction.text import TfidfVectorizer,CountVectorizer 
 from sklearn.utils import shuffle
+import itertools
 import numpy as np
 from sys import platform
 
 VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
 Million_TWEETS = '\data\for_final_project_V.txt'
+use_biagrams = True
 
 
 def import_data():
@@ -116,7 +116,20 @@ def _input_cleaning(text):
 #            #remove stopwords 
 #            elif word in stopwords.words('english'):
 #                wordsAndEmoticons.remove(word)
-    return ' '.join(stemed_cleaned)
+        
+    if use_biagrams:
+    #02/10 - bigram!
+        def bigram_word_feats(words):
+            if len(words) < 1:
+                return []
+            bigram = bigrams(words)
+            return [' '.join(ngram) for ngram in bigram]
+            #return bigrams#dict([(ngram, True) for ngram in itertools.chain(words, bigrams)])
+        biagram_pairs = bigram_word_feats(stemed_cleaned)
+        
+        return ' '.join(biagram_pairs)
+    else:
+        return ' '.join(stemed_cleaned)
 
 def get_data(train_split = 0.6, val_split = 0.3):
     '''Get the training, validation and testing data based on a split
@@ -182,6 +195,7 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 
         val_split: float, the percentage of validation set, default to 0.3
         max_df: float, the upper boundry for word frequencies, default to 0.995
         min_df: float, the lower boundry for word frequencies, default to 0.001
+        use_bigrams: Bool, indicate whether to use bigrams
     
     Returns:
         [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],
@@ -218,7 +232,42 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 
     X_test_sparse = X_sparse[val_p:m,:]
     
     return [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse]
+
+def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 0.001):
+    assert train_split + val_split <= 1.0
+
+    #y ranges from -4 to 4            
+    raw_X,raw_Y = import_data()
+    #tfidf vectorizer
+    transformer = CountVectorizer(preprocessor=_input_cleaning,lowercase = False,max_df = max_df,
+                                  min_df = min_df)
+    X_sparse = transformer.fit_transform(raw_X)
+    raw_X, X_sparse, y = shuffle(raw_X, X_sparse,raw_Y)
     
+    m = np.size(y)
+    train_p = int(np.floor(train_split * m))
+    val_p = int(np.floor((val_split * m) + train_p))
+    
+    y_train = y[0:train_p]
+    X_raw_train = raw_X[0:train_p]
+    X_train_sparse = X_sparse[0:train_p,:]
+    
+    y_val = y[train_p:val_p]
+    X_raw_val = raw_X[train_p:val_p]
+    X_val_sparse = X_sparse[train_p:val_p,:]
+    
+    y_test = y[val_p:m]
+    X_raw_test = raw_X[val_p:m]
+    X_test_sparse = X_sparse[val_p:m,:]
+    
+    return [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse]
+
+
+
+
+    
+
 if __name__ == '__main__':
 #    [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
-     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
+#     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
+     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_count_sparse_data()
