@@ -12,8 +12,13 @@ from keras.layers import Dense, Activation,Dropout
 from keras.utils import to_categorical
 from classifiers import check_acc
 from keras import regularizers
+from keras.layers import LSTM, Conv1D, Flatten
+from keras.layers.embeddings import Embedding
+from keras.preprocessing import sequence
 
-[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data(max_df= 0.999,min_df= 0.0001)
+[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data(max_df= 0.99,min_df= 0.003)
+
+embedding_vecor_length = 256
 
 #convert -1 into 2
 y_train = [2 if x==-1 else x for x in y_train]
@@ -27,29 +32,17 @@ y_val_hot = to_categorical(y_val)
 input_shape = X_train_sparse.get_shape()
 
 
-reg = regularizers.l1(1)
+#reg = regularizers.l2(8e-5)
 
 model = Sequential()
-model.add(Dense(1024, activation='relu', input_dim=input_shape[1],
-                activity_regularizer= reg,
-                kernel_regularizer=reg))
-model.add(Dropout(0.5))
-model.add(Dense(1024, activation='relu', input_dim=1024,
-                activity_regularizer= reg,
-                kernel_regularizer=reg))
-model.add(Dropout(0.5))
-model.add(Dense(512, activation='relu', input_dim=1024,
-                activity_regularizer= reg,
-                kernel_regularizer=reg))
-model.add(Dropout(0.5))
-model.add(Dense(128, activation='relu', input_dim=512,
-                activity_regularizer= reg,
-                kernel_regularizer=reg))
-model.add(Dropout(0.5))
-model.add(Dense(16, activation='relu', input_dim=128,
-                activity_regularizer= reg,
-                kernel_regularizer=reg))
-model.add(Dropout(0.5))
+model.add(Embedding(input_dim = input_shape[1],output_dim = embedding_vecor_length, input_length=input_shape[1]))
+model.add(Conv1D(64, 3, border_mode='same'))
+model.add(Conv1D(32, 3, border_mode='same'))
+model.add(Conv1D(16, 3, border_mode='same'))
+model.add(Flatten())
+model.add(Dropout(0.2))
+model.add(Dense(180,activation='sigmoid'))
+model.add(Dropout(0.2))
 model.add(Dense(3, activation='sigmoid'))
 
 model.compile(optimizer='adam',
@@ -59,15 +52,10 @@ model.compile(optimizer='adam',
 
 
 # Train the model, iterating on the data in batches of 32 samples
-hist = model.fit(X_train_sparse.toarray(), y_train_hot, epochs=9,
+hist = model.fit(X_train_sparse.toarray(), y_train_hot, epochs=100,
           validation_data=(X_val_sparse.toarray(),y_val_hot),
           batch_size= 1024
           ) 
 
-#loss_and_metrics = model.evaluate(X_test_sparse.toarray(), y_test_hot)
-
-
-classes = model.predict(X_test_sparse.toarray())
-result = np.argmax(classes,axis=1)
-acc = np.mean(result == y_test) *100.
-print(acc)
+(loss, accuracy) = model.evaluate(X_test_sparse.toarray(), y_test_hot)
+print(accuracy)

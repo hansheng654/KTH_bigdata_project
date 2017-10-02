@@ -18,7 +18,7 @@ from sklearn.utils import shuffle
 import numpy as np
 from sys import platform
 
-VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
+VADER_RAW_PATH ='\data\VADER\*eets_GroundTruth.txt'
 Million_TWEETS = '\data\for_final_project_V.txt'
 
 
