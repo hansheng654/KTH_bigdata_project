@@ -9,7 +9,7 @@ import glob
 import os
 import re
 import string
-from nltk.stem.lancaster import LancasterStemmer
+from porter2stemmer import Porter2Stemmer
 from nltk import bigrams
 from sklearn.feature_extraction.text import TfidfVectorizer,CountVectorizer 
 from sklearn.utils import shuffle
@@ -19,7 +19,8 @@ from sys import platform
 
 VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
 Million_TWEETS = '\data\for_final_project_V.txt'
-use_biagrams = True
+use_biagrams = False
+
 
 
 def import_data():
@@ -39,7 +40,7 @@ def import_data():
     
     def sentiment_converter(y):
         neg_thresh_hold = -1
-        pos_thresh_hold = 0.7
+        pos_thresh_hold = 0.6
         y = float(y)
         if y > pos_thresh_hold: #happy
             return 1
@@ -102,12 +103,12 @@ def _input_cleaning(text):
                 wordsAndEmoticons.insert(i, word)
                 x2 = wordsAndEmoticons.count(wordp)
     # get rid of residual empty items or single letter "words" like 'a' and 'I' from wordsAndEmoticons
-    stemmer = LancasterStemmer()
+    stemmer = Porter2Stemmer()
     stemed_cleaned = []
     for word in wordsAndEmoticons:
         if len(word) <= 1:
             wordsAndEmoticons.remove(word)    
-        #remove https
+        #remove httpsimport Stemmer
         elif word.find('http') > -1:
             wordsAndEmoticons.remove(word)
         else:
@@ -125,9 +126,9 @@ def _input_cleaning(text):
             bigram = bigrams(words)
             return [' '.join(ngram) for ngram in bigram]
             #return bigrams#dict([(ngram, True) for ngram in itertools.chain(words, bigrams)])
-        biagram_pairs = bigram_word_feats(stemed_cleaned)
-        
+        biagram_pairs = bigram_word_feats(stemed_cleaned)  
         return ' '.join(biagram_pairs)
+    
     else:
         return ' '.join(stemed_cleaned)
 
@@ -195,7 +196,6 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 
         val_split: float, the percentage of validation set, default to 0.3
         max_df: float, the upper boundry for word frequencies, default to 0.995
         min_df: float, the lower boundry for word frequencies, default to 0.001
-        use_bigrams: Bool, indicate whether to use bigrams
     
     Returns:
         [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],
