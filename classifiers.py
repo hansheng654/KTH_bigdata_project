@@ -51,7 +51,8 @@ def check_acc(trained_clf,clf_name,val_acc = False):
     print("neg precision %.4f, neg recall %.4f\n" % (precision[2], recall[2]))
 
 if __name__ == "__main__":
-    [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data(max_df= 0.992,min_df=0.0001)
+    [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_count_sparse_data(max_df= 0.992,min_df=0.0001)
+    
     
     text_clf = BernoulliNB()
     text_clf.fit(X_train_sparse,y_train)
