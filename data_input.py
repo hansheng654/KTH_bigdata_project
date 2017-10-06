@@ -15,6 +15,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer,CountVectorizer
 from sklearn.utils import shuffle
 import numpy as np
 from sys import platform
+from keras.utils import to_categorical
 
 VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
 Million_TWEETS = '\data\for_final_project_V.txt' #to be used
@@ -136,7 +137,7 @@ def _input_cleaning(text):
     else:
         return ' '.join(stemed_cleaned)
 
-def get_data(train_split = 0.6, val_split = 0.3):
+def get_data(train_split = 0.6, val_split = 0.3,one_hot = True):
     '''Get the training, validation and testing data based on a split
     The returned data is NOT vectorised 
     
@@ -148,6 +149,7 @@ def get_data(train_split = 0.6, val_split = 0.3):
     Parameters:
         train_split: float, the percentage of training set, default to 0.6
         val_split: float, the percentage of validation set, default to 0.3
+        one_hot: bool, indicate whether to use one_hot encoding on y
 
     Returns:
         [y_train,X_raw_train,X_train_clean],
@@ -166,7 +168,10 @@ def get_data(train_split = 0.6, val_split = 0.3):
     
     raw_X, cleaned_X, y = shuffle(raw_X, cleaned_X,raw_Y)
     
+    
     m = np.size(y)
+    if one_hot:
+        y = to_categorical(y)
     train_p = int(np.floor(train_split * m))
     val_p = int(np.floor((val_split * m) + train_p))
     
@@ -185,7 +190,7 @@ def get_data(train_split = 0.6, val_split = 0.3):
     return [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean]
     
 
-def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 0.001):
+def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 0.001,one_hot = False):
     """ Get the training, validation and testing data based on a split
     
     The size of testing set is the remaining portion of the total dataset
@@ -200,6 +205,7 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 
         val_split: float, the percentage of validation set, default to 0.3
         max_df: float, the upper boundry for word frequencies, default to 0.995
         min_df: float, the lower boundry for word frequencies, default to 0.001
+        one_hot: bool, indicate whetehr to use one-hot encoding, default to False
     
     Returns:
         [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],
@@ -220,6 +226,8 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 
     raw_X, X_sparse, y = shuffle(raw_X, X_sparse,raw_Y)
     
     m = np.size(y)
+    if one_hot:
+        y = to_categorical(y)
     train_p = int(np.floor(train_split * m))
     val_p = int(np.floor((val_split * m) + train_p))
     
@@ -237,7 +245,7 @@ def get_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 
     
     return [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse]
 
-def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 0.001):
+def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min_df = 0.001,one_hot = False,get_vocab  = False):
     """ Get the training, validation and testing data based on a split
     The size of testing set is the remaining portion of the total dataset
     can be 0
@@ -251,6 +259,7 @@ def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min
         val_split: float, the percentage of validation set, default to 0.3
         max_df: float, the upper boundry for word frequencies, default to 0.995
         min_df: float, the lower boundry for word frequencies, default to 0.001
+        
     
     Returns:
         [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],
@@ -270,6 +279,8 @@ def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min
     raw_X, X_sparse, y = shuffle(raw_X, X_sparse,raw_Y)
     
     m = np.size(y)
+    if one_hot:
+        y = to_categorical(y)
     train_p = int(np.floor(train_split * m))
     val_p = int(np.floor((val_split * m) + train_p))
     
@@ -284,17 +295,40 @@ def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min
     y_test = y[val_p:m]
     X_raw_test = raw_X[val_p:m]
     X_test_sparse = X_sparse[val_p:m,:]
-    
-    return [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse]
+    if get_vocab:
+        return [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse],transformer.vocabulary_
+    else:
+        return [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse]
 
 def get_RBM_data():
     '''this is a placeholder for implementing Restricted Boltzmann Machines'''
     pass
 
 
+def batch_iter(data, batch_size, num_epochs, shuffle=True): 
+    ''' taken from http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/
+    used by tensorflow
+    '''
+    #Generates a batch iterator for a dataset.    
+    data = np.array(data)
+    data_size = len(data)
+    num_batches_per_epoch = int((len(data)-1)/batch_size) + 1
+    for epoch in range(num_epochs):
+        # Shuffle the data at each epoch
+        if shuffle:
+            shuffle_indices = np.random.permutation(np.arange(data_size))
+            shuffled_data = data[shuffle_indices]
+        else:
+            shuffled_data = data
+        for batch_num in range(num_batches_per_epoch):
+            start_index = batch_num * batch_size
+            end_index = min((batch_num + 1) * batch_size, data_size)
+            yield shuffled_data[start_index:end_index]
+
+
     
 
 if __name__ == '__main__':
 #    [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
-#     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
-     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_count_sparse_data()
+     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
+#     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_count_sparse_data()
