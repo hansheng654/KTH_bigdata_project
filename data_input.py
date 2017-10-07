@@ -9,6 +9,7 @@ import glob
 import os
 import re
 import string
+#from nltk.corpus import stopwords
 from porter2stemmer import Porter2Stemmer
 from nltk import bigrams
 from sklearn.feature_extraction.text import TfidfVectorizer,CountVectorizer 
@@ -18,7 +19,7 @@ from sys import platform
 from keras.utils import to_categorical
 
 VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
-Million_TWEETS = '\data\for_final_project_V.txt' #to be used
+Million_TWEETS = '\\data\\for_final_project_V.txt' #to be used
 Mobile_tweets = '\data\100k_mobile_tweets' #to be added
 use_biagrams = False  #whether to use biagrams as features
 
@@ -57,8 +58,33 @@ def _import_data():
     
     return X,Y
 
-
-
+def become_millionaire():
+    """ Call this function to become a millionaire - someone has 1 million dataset to play with
+    
+    Return:
+        cleaned 1 million data in a list
+    
+    """
+    count = 0
+    cwd = os.getcwd()
+    X = []
+    if platform=='win32':
+        data_path = cwd+Million_TWEETS
+    else:
+        data_path = cwd+'/'+ Million_TWEETS.replace('\\','/')
+    with open(data_path, 'rb') as f:
+            for line in f.readlines():
+                X.append(_input_cleaning(line.decode()))
+                if(count % 1000 ==0):
+                    print("progress:",count/10000.0)    
+                count+=1
+                
+    del X[0]
+    return X
+# for removing punctuation
+puncList = [".", "!", "?", ",", ";", ":", "-", "'", "\"", 
+                "!!", "!!!", "??", "???", "?!?", "!?!", "?!?!", "!?!?",'..','...'] 
+regex_remove_punctuation = re.compile('[%s]' % re.escape(string.punctuation + ''.join(puncList)))
 def _input_cleaning(text):
     """ a function used by Vectorizer
     from raw input texts, remove stop words, perform steming, 
@@ -76,52 +102,27 @@ def _input_cleaning(text):
         cleaned text, removed punctuations, added stemming, removed urls 
     
     """
-    # for removing punctuation
-    regex_remove_punctuation = re.compile('[%s]' % re.escape(string.punctuation))
-    puncList = [".", "!", "?", ",", ";", ":", "-", "'", "\"", 
-                    "!!", "!!!", "??", "???", "?!?", "!?!", "?!?!", "!?!?"] 
+
 #    for text in raw_X:
     text = text.lower()
-    wordsAndEmoticons = str(text).split() #doesn't separate words from adjacent punctuation (keeps emoticons & contractions)
     text_mod = regex_remove_punctuation.sub('', text) # removes punctuation (but loses emoticons & contractions)
     wordsOnly = str(text_mod).split()
-    # get rid of empty items or single letter "words" like 'a' and 'I' from wordsOnly
-    for word in wordsOnly:
-        if len(word) <= 1:
-            wordsOnly.remove(word)    
-    # now remove adjacent & redundant punctuation from [wordsAndEmoticons] while keeping emoticons and contractions
-    for word in wordsOnly:
-        for p in puncList:
-            pword = p + word
-            x1 = wordsAndEmoticons.count(pword)
-            while x1 > 0:
-                i = wordsAndEmoticons.index(pword)
-                wordsAndEmoticons.remove(pword)
-                wordsAndEmoticons.insert(i, word)
-                x1 = wordsAndEmoticons.count(pword)
-            
-            wordp = word + p
-            x2 = wordsAndEmoticons.count(wordp)
-            while x2 > 0:
-                i = wordsAndEmoticons.index(wordp)
-                wordsAndEmoticons.remove(wordp)
-                wordsAndEmoticons.insert(i, word)
-                x2 = wordsAndEmoticons.count(wordp)
+
     # get rid of residual empty items or single letter "words" like 'a' and 'I' from wordsAndEmoticons
     stemmer = Porter2Stemmer()
     stemed_cleaned = []
-    for word in wordsAndEmoticons:
+    for word in wordsOnly:
         if len(word) <= 1:
-            wordsAndEmoticons.remove(word)    
+            continue
+#            wordsOnly.remove(word)    
         #remove httpsimport Stemmer
         elif word.find('http') > -1:
-            wordsAndEmoticons.remove(word)
+#            wordsOnly.remove(word)
+            continue
+#        elif word in stopwords.words('english'): #Too slow for our dataset
+#            continue
         else:
             stemed_cleaned.append(stemmer.stem(word))
-        #not removing it,because some words are important!
-#            #remove stopwords 
-#            elif word in stopwords.words('english'):
-#                wordsAndEmoticons.remove(word)
         
     if use_biagrams:
     #02/10 - bigram!
@@ -300,11 +301,8 @@ def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min
     else:
         return [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse]
 
-def get_RBM_data():
-    '''this is a placeholder for implementing Restricted Boltzmann Machines'''
-    pass
 
-
+     
 def batch_iter(data, batch_size, num_epochs, shuffle=True): 
     ''' taken from http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/
     used by tensorflow
@@ -330,5 +328,6 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
 
 if __name__ == '__main__':
 #    [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
-     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
-#     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_count_sparse_data()
+#     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
+     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_count_sparse_data()
+#    X = become_millionaire()
