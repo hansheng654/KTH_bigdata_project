@@ -17,9 +17,11 @@ from sklearn.utils import shuffle
 import numpy as np
 from sys import platform
 from keras.utils import to_categorical
+import pickle
 
 VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
-Million_TWEETS = '\\data\\for_final_project_V.txt' #to be used
+#Million_TWEETS = '\\data\\for_final_project_V.txt' #to be used
+Millionaire = 'cleaned_million'
 Mobile_tweets = '\data\100k_mobile_tweets' #to be added
 use_biagrams = False  #whether to use biagrams as features
 
@@ -65,21 +67,24 @@ def become_millionaire():
         cleaned 1 million data in a list
     
     """
-    count = 0
-    cwd = os.getcwd()
-    X = []
-    if platform=='win32':
-        data_path = cwd+Million_TWEETS
-    else:
-        data_path = cwd+'/'+ Million_TWEETS.replace('\\','/')
-    with open(data_path, 'rb') as f:
-            for line in f.readlines():
-                X.append(_input_cleaning(line.decode()))
-                if(count % 1000 ==0):
-                    print("progress:",count/10000.0)    
-                count+=1
-                
-    del X[0]
+#    count = 0
+#    cwd = os.getcwd()
+#    X = []
+#    if platform=='win32':
+#        data_path = cwd+Million_TWEETS
+#    else:
+#        data_path = cwd+'/'+ Million_TWEETS.replace('\\','/')
+#    with open(data_path, 'rb') as f:
+#            for line in f.readlines():
+#                X.append(_input_cleaning(line.decode()))
+#                if(count % 1000 ==0):
+#                    print("progress:",count/10000.0)    
+#                count+=1
+#                
+#    del X[0]
+    with open (Millionaire, 'rb') as fp:
+        X = pickle.load(fp)
+    
     return X
 # for removing punctuation
 puncList = [".", "!", "?", ",", ";", ":", "-", "'", "\"", 
@@ -329,5 +334,5 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
 if __name__ == '__main__':
 #    [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
 #     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
-     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_count_sparse_data()
-#    X = become_millionaire()
+#     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_count_sparse_data()
+    X = become_millionaire()
