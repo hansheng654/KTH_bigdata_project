@@ -6,14 +6,15 @@ Created on Sat Sep 30 18:10:30 2017
 """
 from sklearn import svm
 import time
-
-from data_input import get_sparse_data
+import numpy as np
+from data_input import get_count_sparse_data
+from sklearn.metrics import precision_recall_fscore_support
 
 KERNEL='linear'
 C_PARAM=15
 
 start_time = time.time() 
-[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
+[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_count_sparse_data()
 
 def check_acc(trained_clf,clf_name,val_acc = False):
     #print training and testing acc automatically 
