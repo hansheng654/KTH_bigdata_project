@@ -15,7 +15,9 @@ from sklearn.svm import LinearSVC, SVC
 from sklearn.metrics import precision_recall_fscore_support
 import numpy as np
 import scipy
-[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_count_sparse_data(max_df= 0.992,min_df=0.0001)
+from sklearn.linear_model import LogisticRegression
+
+[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_count_sparse_data(max_df= 0.995,min_df=0.0001)
 
 def check_acc(trained_clf,clf_name,val_acc = False):
     #print training and testing acc automatically 
@@ -68,17 +70,22 @@ if __name__ == "__main__":
     text_clf.fit(X_train_sparse,y_train)
     check_acc(text_clf,"SGD",True)
     
-    text_clf = SVC(C=30, kernel='rbf', degree=2, gamma=100)
+    text_clf = LogisticRegression(penalty = 'l1') #works better on high dimentional sparse dataset
     text_clf.fit(X_train_sparse,y_train)
-    check_acc(text_clf,"rbf",True)
+    check_acc(text_clf,"Logistic Regression",True)
     
-    parameters = {
-                   'C':scipy.stats.expon(scale=100),
-                   'degree':(2,3,4),
-                   'gamma':scipy.stats.expon(scale=100)
-#                    'alpha':scipy.stats.expon(scale = 0.0001)
-                   }
-    gs_clf = RandomizedSearchCV(text_clf,parameters,n_jobs=-1,n_iter = 50)
-    gs_clf = gs_clf.fit(X_val_sparse,y_val)
-    gs_clf.best_score_
-    gs_clf.best_params_
+    
+#    text_clf = SVC(C=30, kernel='rbf', degree=2, gamma=100)
+#    text_clf.fit(X_train_sparse,y_train)
+#    check_acc(text_clf,"rbf",True)
+    
+#    parameters = {
+#                   'C':scipy.stats.expon(scale=100),
+#                   'degree':(2,3,4),
+#                   'gamma':scipy.stats.expon(scale=100)
+##                    'alpha':scipy.stats.expon(scale = 0.0001)
+#                   }
+#    gs_clf = RandomizedSearchCV(text_clf,parameters,n_jobs=-1,n_iter = 50)
+#    gs_clf = gs_clf.fit(X_val_sparse,y_val)
+#    gs_clf.best_score_
+#    gs_clf.best_params_

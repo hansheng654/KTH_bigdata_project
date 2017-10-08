@@ -259,6 +259,7 @@ def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min
     - uses CountVectorizer, X values are the word count of a feature word dictionary
     - auto shuffle
     - max and min df controls the dimension of X
+    - use 2 as ngram_range
     
     Parameters:
         train_split: float, the percentage of training set, default to 0.6
@@ -280,7 +281,7 @@ def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min
     raw_X,raw_Y = _import_data()
     #tfidf vectorizer
     transformer = CountVectorizer(preprocessor=_input_cleaning,lowercase = False,max_df = max_df,
-                                  min_df = min_df)
+                                  min_df = min_df,ngram_range = (1,2))
     X_sparse = transformer.fit_transform(raw_X)
     raw_X, X_sparse, y = shuffle(raw_X, X_sparse,raw_Y)
     
