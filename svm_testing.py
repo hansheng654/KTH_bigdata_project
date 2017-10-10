@@ -14,7 +14,7 @@ KERNEL='linear'
 C_PARAM=15
 
 start_time = time.time() 
-[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_count_sparse_data()
+[y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse], vocab = get_count_sparse_data(get_vocab=True)
 
 def check_acc(trained_clf,clf_name,val_acc = False):
     #print training and testing acc automatically 
@@ -34,7 +34,6 @@ def check_acc(trained_clf,clf_name,val_acc = False):
         result_sk = np.array(list(map(int,result_sk)))
         acc = np.mean(result_sk == true_label) *100.
         print("Validation Accuracy, %s with tf-idf: %.2f%%" % (clf_name,acc))
-    
     
     #testing acc
     result_sk = trained_clf.predict(X_test_sparse)
@@ -57,15 +56,15 @@ Highest accuracy is SVC with linear kernel with 68.73% on training, 68.89% on va
 Accuracies hold around 67% at the moment
 """
 linsvc = svm.SVC(C=C_PARAM, kernel=KERNEL, decision_function_shape='ovo')
-LinearSVC = svm.LinearSVC(C=C_PARAM)
-rbf_svc = svm.NuSVC(decision_function_shape='ovo')
-
 linsvc.fit(X_train_sparse, y_train)
-rbf_svc.fit(X_train_sparse, y_train)
-LinearSVC.fit(X_train_sparse, y_train)
-
 check_acc(linsvc, "SVC with linear kernel", True)
-check_acc(LinearSVC, "LinearSVC", True)
-check_acc(rbf_svc, "nuSVC", True)
+
+#LinearSVC = svm.LinearSVC(C=C_PARAM)
+#LinearSVC.fit(X_train_sparse, y_train)
+#check_acc(LinearSVC, "LinearSVC", True)
+
+#rbf_svc = svm.NuSVC(decision_function_shape='ovo')
+#rbf_svc.fit(X_train_sparse, y_train)
+#check_acc(rbf_svc, "nuSVC", True)
 
 print(" --- extracting time: %s seconds ---" % (time.time() - start_time))

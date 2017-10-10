@@ -24,8 +24,10 @@ import pandas as pd
 VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
 #Million_TWEETS = '\\data\\for_final_project_V.txt' #to be used
 Millionaire = 'cleaned_million'
+
 Mobile_tweets = '100kPhoneTweets.csv' #to be added
 use_biagrams = False  #whether to use biagrams as features
+
 
 def _import_data():
     """ Function used by get_data methods
@@ -165,7 +167,7 @@ def _input_cleaning(text):
         else:
             stemed_cleaned.append(stemmer.stem(word))
         
-    if use_biagrams:
+    if use_bigrams:
     #02/10 - bigram!
         def bigram_word_feats(words):
             if len(words) < 1:
@@ -175,7 +177,6 @@ def _input_cleaning(text):
             #return bigrams#dict([(ngram, True) for ngram in itertools.chain(words, bigrams)])
         biagram_pairs = bigram_word_feats(stemed_cleaned)  
         return ' '.join(biagram_pairs)
-    
     else:
         return ' '.join(stemed_cleaned)
 
@@ -315,6 +316,14 @@ def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min
 
     #y ranges from -4 to 4            
     raw_X,raw_Y = _import_data()
+    
+    """
+    #uncomment to transform the three classes into two, positive and negative
+    for index, x in enumerate(raw_X):
+        if raw_Y[index] == 0:
+            del raw_X[index]
+            del raw_Y[index]
+    """
     #tfidf vectorizer
     transformer = CountVectorizer(preprocessor=_input_cleaning,lowercase = False,max_df = max_df,
                                   min_df = min_df,ngram_range = (1,2))
@@ -338,6 +347,7 @@ def get_count_sparse_data(train_split = 0.6, val_split = 0.3,max_df = 0.995, min
     y_test = y[val_p:m]
     X_raw_test = raw_X[val_p:m]
     X_test_sparse = X_sparse[val_p:m,:]
+    
     if get_vocab:
         return [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse],transformer.vocabulary_
     else:
