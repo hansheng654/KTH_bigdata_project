@@ -18,11 +18,13 @@ import numpy as np
 from sys import platform
 from keras.utils import to_categorical
 import pickle
+import pandas as pd 
+
 
 VADER_RAW_PATH ='\data\VADER\*_GroundTruth.txt'
 #Million_TWEETS = '\\data\\for_final_project_V.txt' #to be used
 Millionaire = 'cleaned_million'
-Mobile_tweets = '\data\100k_mobile_tweets' #to be added
+Mobile_tweets = '100kPhoneTweets.csv' #to be added
 use_biagrams = False  #whether to use biagrams as features
 
 def _import_data():
@@ -53,12 +55,25 @@ def _import_data():
         if y > pos_thresh_hold: #happy
             return 1
         elif y < neg_thresh_hold: #sad
-            return 2
-        return 0 
+            return 0
+        else:
+            return -1 
         #snap into 0,1,2 based on thresh holds
     Y = list(map(sentiment_converter,Y))
+    my_X = []
+    my_Y = []  
+    lent = len(Y)
+
+    for i in range(lent):
+        if Y[i] == -1 :
+            continue
+        else:
+            my_X.append(X[i])
+            my_Y.append(Y[i])
+            
+
     
-    return X,Y
+    return my_X,my_Y
 
 def become_millionaire():
     """ Call this function to become a millionaire - someone has 1 million dataset to play with
@@ -71,7 +86,7 @@ def become_millionaire():
 #    cwd = os.getcwd()
 #    X = []
 #    if platform=='win32':
-#        data_path = cwd+Million_TWEETS
+#        data_path =X cwd+Million_TWEETS
 #    else:
 #        data_path = cwd+'/'+ Million_TWEETS.replace('\\','/')
 #    with open(data_path, 'rb') as f:
@@ -86,6 +101,27 @@ def become_millionaire():
         X = pickle.load(fp)
     
     return X
+
+def phone_dataset():
+    X = pd.read_csv(Mobile_tweets ,encoding = "cp1251",delimiter=',',header = None)
+    X = list(X[0])
+    iphone_tweets= []
+    samsung_tweets =  []
+    
+    for text in X:
+        cleaned_text = _input_cleaning(str(text))
+        if any(word in cleaned_text for word in iphone):
+            iphone_tweets.append(cleaned_text)
+        if any(word in cleaned_text for word in samsung):
+            samsung_tweets.append(cleaned_text)
+    return samsung_tweets,iphone_tweets
+        
+        
+        
+    
+    
+
+
 # for removing punctuation
 puncList = [".", "!", "?", ",", ";", ":", "-", "'", "\"", 
                 "!!", "!!!", "??", "???", "?!?", "!?!", "?!?!", "!?!?",'..','...'] 
@@ -334,6 +370,7 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
 
 if __name__ == '__main__':
 #    [y_train,X_raw_train,X_train_sparse],[y_val,X_raw_val,X_val_sparse],[y_test,X_raw_test,X_test_sparse] = get_sparse_data()
-#     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
+     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_data()
 #     [y_train,X_raw_train,X_train_clean],[y_val,X_raw_val,X_val_clean],[y_test,X_raw_test,X_test_clean] = get_count_sparse_data()
-    X = become_millionaire()
+#    X = become_millionaire()
+#     = get_data()
