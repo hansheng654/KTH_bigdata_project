@@ -18,7 +18,7 @@ for predict, run: python predict.py --checkpoints_dir <checkpoints directory>
 for more information: see the readme file inside the project
 
 ## CNN
-1.Run Train_CNN.py for training process 
+1. Run Train_CNN.py for training process 
 
 2. Checkpoints will be saved in runs folder
 
