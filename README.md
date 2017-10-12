@@ -18,4 +18,10 @@ for predict, run: python predict.py --checkpoints_dir <checkpoints directory>
 for more information: see the readme file inside the project
 
 ## CNN
-Run 
+1.Run Train_CNN.py for training process 
+2. Checkpoints will be saved in runs folder
+3. Run Test_CNN_v2_final.py for test process 
+Hints:
+You should change the directory of input data in the test and train process based on your own data directory  
+text_cnn.py contain the model for CNN. data_helpers.py and data_input_v3.py doing some process related to input data of CNN
+
