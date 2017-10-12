@@ -8,6 +8,8 @@ Simply run bayes_classifiers.py
 Run svm_testing.py 
 
 ## LSTM
+dir : KTH_bigdata_project/sentiment_analysis_tensorflow-master/
+
 for train, run: python train.py
 
 for predict, run: python predict.py --checkpoints_dir <checkpoints directory>  
